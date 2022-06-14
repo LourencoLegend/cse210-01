@@ -1,74 +1,99 @@
-	
-# variable that stores the number chosen
-choice = []
-	
+import time
 
-#looping to get numbers from 1 to 9 and convert them into string
-for i in range(0, 9):
-    choice.append(str(i + 1))
-		
+# Initialize board
+board = { 1 : ' ', 2 : ' ', 3: ' ',
+         4 : ' ', 5 : ' ', 6 : ' ', 
+         7 : ' ', 8 : ' ', 9 : ' '}
 
-#function to create and print table
-def board():
-    print(choice[0] + "|" +  choice[1] + "|" +  choice[2])
-    print("_" + "+" + "_" + "+" + "_")
-    print(choice[3] + "|" + choice[4] + "|" + choice[5])
-    print("_" + "+" + "_" + "+" + "_")
-    print(choice[6] + "|" + choice[7] + "|" + choice[8] + "\n")
-	
+# Initialize variables
+count = 0		# counter to track number of filled slots
+winner = False		# boolean to check if anyone won
+play = True		# boolen to check if the game should continue
+tie = False		# boolean to check if there is a tie
+curr_player = ''	# variable to store current player identifier
+player_details = []	# list to store player identifier and marker
 
-#Game
-def game():
-    #there's only one varible that stores the two players movements and it set to true
-    firstPlayer = True
-    #there's not winner yet so variable is set to be false
-    winner = False
-    #while there's no winner the game wull be ran
-    while  not winner:
-        board()
-        #Printing which player should play
-        if firstPlayer:
-            print("x's turn to choose a square (1-9):")
-        else:
-            print("o's turn to choose a square (1-9):")
-        try:
-            #move should be an interger that will be tried, if it's not the case, the turn will be lost
-            move = int(input("Move: "))
-        except:
-            print("... ")
-            continue
-        if choice[move -1] == "X" or choice[move -1 ] == "O":
-            #Movement cannot be O or X
-            print("Enter a valid move ")
-            continue
-       #Replacing number by either O or X
-        if firstPlayer:
-            choice[move -1] = "X"
-        else:
-            choice[move -1] = "O"
+# Helper functions
+def get_player_details(curr_player):
+    """Function to get player identifier and marker"""
+    if curr_player == 'A':
+        return ['B','O']
+    else:
+        return ['A','X']
+    
 
-        firstPlayer = not  firstPlayer
-	
+def print_board():
+    """Function to print the board"""
+    for i in board:
+        print( i, ':', board[i], ' ', end='')
+        if i%3 == 0:
+            print()
 
-#if a player completes three lines in the board, there will be a winner
-        for i in range(0, 3):
-            a = i * 3
-            #if choice 1 + 2 and 3 are the choice, there will be a winner
-            if choice[a] == choice[(a + 1)] and choice[a] == choice[(a + 2)]:
-                winner == True
-                board()
-	
 
-            if choice[i] == choice[(i + 3)] and choice[i] == choice[(a + 6)]:
-                winner == True
-                board()
-        if ((choice[0] == choice[4] and choice[0] == choice[8]) or
-            (choice[2] == choice[4] and choice[4] == choice[6])):
-             winner = True
-             board()
-#game will be ended if there's a winner
-    print("Good game. Thanks for playing!")
-	
-if __name__ == "__main__":
-	    game()
+def win_game(marker, player_id):
+    """Function to check for winning combination"""
+    if board[1] == marker and board[2] == marker and board[3] == marker or \
+    board[4] == marker and board[5] == marker and board[6] == marker or \
+    board[7] == marker and board[8] == marker and board[9] == marker or \
+    board[1] == marker and board[4] == marker and board[7] == marker or \
+    board[2] == marker and board[5] == marker and board[8] == marker or \
+    board[3] == marker and board[6] == marker and board[9] == marker or \
+    board[1] == marker and board[5] == marker and board[9] == marker or \
+    board[3] == marker and board[5] == marker and board[7] == marker:
 
+        print_board()
+        time.sleep(1)
+        print("Player", player_id, "wins!")
+        return True
+
+    else:
+        return False
+
+
+def insert_input(slot_num, marker):
+    """Function for capturing user inputs"""
+    while board[slot_num] != ' ':
+        print("spot taken, pick another no.")
+        slot_num = int(input())
+    board[slot_num] = marker
+
+def play_again():
+    """Function to check if player wants to play again"""
+    print("Do you want to play again?: Y or N")
+    play_again = input()
+
+    if play_again.upper() == 'Y':
+        for z in board:
+            board[z] = ' '
+        return True
+    else:
+        print("Thanks for playing. See you next time!")
+        return False
+    
+# Main program
+while play:
+
+    print_board()
+
+    player_details = get_player_details(curr_player)
+    curr_player = player_details[0]
+    print("Player {}: Enter a number between 1 and 9".format(curr_player))
+    input_slot = int(input())
+
+    #Inserting 'X' or 'O' in desired spot
+    insert_input(input_slot, player_details[1])
+    count += 1
+    
+    # Check if anybody won
+    winner = win_game(player_details[1], curr_player)
+    if count == 9 and not winner:
+        print("It's a tie!!")
+        tie = True
+        print_board()
+
+    # Check if players want to play again
+    if winner or tie:
+        play = play_again()
+        if play:
+            curr_player = ''
+            count = 0
